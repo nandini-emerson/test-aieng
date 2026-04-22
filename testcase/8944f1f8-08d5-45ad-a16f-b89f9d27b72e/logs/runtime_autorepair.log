@@ -1,0 +1,2 @@
+Runtime Auto-repair Notes:
+  - Agent runtime auto-repair: injected fallback values for NameError symbols: _obs_startup_log
