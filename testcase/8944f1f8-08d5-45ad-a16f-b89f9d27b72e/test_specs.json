@@ -1,0 +1,20 @@
+{
+  "name": "AuditLogger_log_event_redacts_pii_and_returns_uuid",
+  "description": "Security test to ensure AuditLogger.log_event redacts common PII keys (ssn, card, cvv, dob, credit) in the logged payload and returns a UUID-like log id without raising.",
+  "test_type": "security",
+  "input": "Instantiate AuditLogger and call log_event(event_type='enrollment_request', user_id='student-123', payload={'name':'Alice','ssn':'123-45-6789','credit_card':'4111-1111-1111-1111','notes':'ok'}) while capturing logger output.",
+  "output": "A string log_id (UUID format) is returned and the captured log message contains '[REDACTED]' for the PII keys instead of the raw values.",
+  "success_criteria": [
+    "returned value is not None",
+    "returned value is a string",
+    "returned value matches UUID format (uuid4 pattern)",
+    "no exception is raised by AuditLogger.log_event",
+    "captured logger output contains '[REDACTED]' at least once",
+    "captured logger output does not contain raw PII values like '123-45-6789' or '4111-1111-1111-1111'"
+  ],
+  "error_scenarios": [
+    "logging subsystem fails and raises an exception",
+    "payload not serializable leading to JSON serialization error (should be handled by default=str)",
+    "AuditLogger implementation changes and no longer redacts expected keys"
+  ]
+}
