@@ -1,0 +1,20 @@
+{
+  "name": "LLMService_call_llm_handles_alternative_response_shapes_under_load",
+  "description": "Performance/security hybrid test ensuring LLMService.call_llm correctly extracts content and tokens_used from responses with atypical shapes under repeated fast calls (stress). Verifies no sensitive fields are leaked in returned LLMResponse.raw_payload when response lacks __dict__ or usage shapes vary.",
+  "test_type": "performance",
+  "input": "Instantiate LLMService with openai_client_factory returning a stub client whose chat.completions.create returns several variant response shapes quickly across repeated calls: (1) object with choices[0].message.content and usage attr, (2) object with choices list but choices[0].message missing content attribute, (3) object with no usage. Run 100 short sequential calls to call_llm and record results and durations.",
+  "output": "All calls return LLMResponse objects without raising exceptions; the method extracts empty string when content missing; tokens_used is present only when usage available; aggregate latency per call remains low (e.g., avg < 150ms).",
+  "success_criteria": [
+    "100/100 calls returned LLMResponse instances",
+    "no exceptions propagated from call_llm in any variant",
+    "when response has content -> response.text equals that content",
+    "when response lacks content -> response.text == ''",
+    "tokens_used is None when response.usage missing",
+    "average call latency across 100 calls < 150 ms"
+  ],
+  "error_scenarios": [
+    "stubbed client raises intermittently producing exceptions",
+    "unexpected response shapes that break indexing into response.choices leading to IndexError",
+    "test harness too slow causing latency assertions to fail"
+  ]
+}
