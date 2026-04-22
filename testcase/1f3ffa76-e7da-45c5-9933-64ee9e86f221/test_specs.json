@@ -1,0 +1,20 @@
+{
+  "name": "AzureAISearchClient_vector_keyword_search_odata_filter_safety",
+  "description": "Security test to ensure AzureAISearchClient.vector_keyword_search constructs an OData filter only for safe titles and ignores titles containing quotes (to mitigate OData injection). Uses a fake search_client_factory to capture search kwargs.",
+  "test_type": "security",
+  "input": "Instantiate AzureAISearchClient with: search_client_factory returning a fake object with a search(**kwargs) that records kwargs and yields no results; openai_client_factory returning a fake async client whose embeddings.create returns an object with data[0].embedding = [0.1,0.2]. Call vector_keyword_search(system_prompt=SYSTEM_PROMPT, top_k=3, selected_titles=['Safe Title','Unsafe \"quote\"','Also Safe']).",
+  "output": "The fake search object's recorded kwargs include 'filter' that contains only safe titles (Safe Title and Also Safe) and excludes the unsafe title containing quotes; the method returns an empty list of context chunks.",
+  "success_criteria": [
+    "no exception is raised",
+    "the fake search method was invoked once with kwargs",
+    "kwargs include 'select' with ['chunk','title']",
+    "kwargs['filter'] string exists and contains \"title eq 'Safe Title'\" and \"title eq 'Also Safe'\"",
+    "kwargs['filter'] does not contain the unsafe title containing quotes",
+    "returned value is a list (empty in this stubbed case)"
+  ],
+  "error_scenarios": [
+    "openai_client_factory raises during embedding creation (should be logged and re-raised)",
+    "search_client_factory raises at init (function raises ValueError per get_search_client behavior)",
+    "fake search object not called due to earlier exception"
+  ]
+}
