@@ -1,0 +1,19 @@
+{
+  "name": "LLMService_call_llm_latency_under_threshold_with_stub_client",
+  "description": "Performance test measuring latency of LLMService.call_llm when the underlying openai client returns quickly. Uses a stub openai client that immediately returns a shaped response. Ensures LLMResponse is returned and call duration is within acceptable threshold.",
+  "test_type": "performance",
+  "input": "Instantiate LLMService with openai_client_factory returning a stub client where chat.completions.create is an async function returning an object shaped like: response.choices=[SimpleNamespace(message=SimpleNamespace(content='Generated summary...'))], response.usage=SimpleNamespace(prompt_tokens=10, completion_tokens=20, total_tokens=30). Call call_llm(system_prompt=SYSTEM_PROMPT, user_prompt='Please enroll me', context_chunks=['doc1','doc2'], llm_params={'temperature':0.1}).",
+  "output": "An instance of LLMResponse is returned quickly (<200ms wall-clock in unit test environment) with text matching the stub content and tokens_used matching usage values.",
+  "success_criteria": [
+    "response is instance of LLMResponse",
+    "response.text == 'Generated summary...' (or contains that substring)",
+    "response.tokens_used is a dict with keys 'prompt_tokens','completion_tokens','total_tokens' and integer values matching stub",
+    "call duration measured via time() is below the configured threshold (e.g., < 200 ms) in the test environment",
+    "no exceptions are raised"
+  ],
+  "error_scenarios": [
+    "openai_client_factory raises (client init failure)",
+    "chat.completions.create raises or times out (should result in propagated exception)",
+    "test environment too slow causing false positives on latency assertion"
+  ]
+}
