@@ -1,0 +1,19 @@
+{
+  "name": "EnrollmentAgentOrchestrator_process_query_concurrent_throughput",
+  "description": "Performance test that measures throughput and concurrency behavior of EnrollmentAgentOrchestrator.process_query under load. Uses stubbed dependencies (ChunkRetriever, LLMService, BusinessRulesEngine, TicketingAdapter, AuditLogger) that return quickly to simulate peak throughput. Runs N concurrent requests and asserts average latency and success.",
+  "test_type": "performance",
+  "input": "Create EnrollmentAgentOrchestrator with injected stubs: ChunkRetriever.retrieve_chunks returns ['c1'], LLMService.call_llm returns LLMResponse(text='Summary\\nActions: 1. Do X', tokens_used=None, raw_payload={}), BusinessRulesEngine.evaluate returns {'eligibility_status':'eligible','reasons':[]}, TicketingAdapter.create_ticket not invoked (eligibility eligible), AuditLogger.log_event returns a uuid. Launch N=50 concurrent asyncio tasks calling process_query(user_context={'student_id':'s'+i}) and measure total and per-request latency.",
+  "output": "A list of envelopes (dict) returned for each concurrent invocation. Measured average latency and p95 latency must be within acceptable thresholds (example: avg < 300ms, p95 < 700ms) and all envelopes indicate success True.",
+  "success_criteria": [
+    "all returned envelopes are dicts",
+    "each envelope['success'] is True",
+    "no tasks raised exceptions in asyncio.gather",
+    "average per-request latency across N requests < 300 ms (configurable threshold)",
+    "95th percentile latency (p95) < 700 ms (configurable)"
+  ],
+  "error_scenarios": [
+    "resource contention in test runner causes high latencies",
+    "one of the stubbed components raises unexpectedly causing some tasks to fail",
+    "asyncio scheduling starvation yields outlier latencies"
+  ]
+}
