@@ -1,0 +1,5 @@
+{
+  "user_context": "string",
+  "selected_document_titles": "list",
+  "session_id": "string"
+}
